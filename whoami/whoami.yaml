@@ -1,0 +1,62 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: whoami
+  labels:
+    app: traefiklabs
+    name: whoami
+
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: traefiklabs
+      task: whoami
+  template:
+    metadata:
+      labels:
+        app: traefiklabs
+        task: whoami
+    spec:
+      containers:
+        - name: whoami
+          image: traefik/whoami
+          ports:
+            - containerPort: 80
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: whoami-service
+spec:
+  ports:
+    - name: http
+      port: 80
+  selector:
+    app: traefiklabs
+    task: whoami
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: http-ingress-whoami
+  annotations:
+    cert-manager.io/cluster-issuer: "lets-encrypt"
+    kubernetes.io/ingress.class: "public"
+spec:
+  tls:
+  - hosts:
+    -  whoami.kdev.antosubash.com
+    secretName: whoami-tls
+  rules:
+  - host: "whoami.kdev.antosubash.com"
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service: 
+            name: whoami-service
+            port: 
+              number: 80
