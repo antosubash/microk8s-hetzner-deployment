@@ -1,0 +1,72 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+spec:
+  accessModes: [ReadWriteOnce]
+  resources: { requests: { storage: 5Gi } }
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+  labels:
+    app: postgres
+    name: postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+      task: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+        task: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: kartoza/postgis:12.0
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              value: "test"
+            - name: POSTGRES_USER
+              value: postgres
+            - name: POSTGRES_PASS
+              value: "my_postgres_password"
+            - name: --auth
+              value: "md5"
+            - name: POSTGRES_MULTIPLE_EXTENSIONS
+              value: "postgis,hstore,postgis_topology"
+          resources:
+            requests:
+              memory: "100Mi"
+              cpu: "250m"
+            limits:
+              memory: "200Mi"
+              cpu: "500m"
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql
+      volumes:
+        - name: postgres-data
+          persistentVolumeClaim:
+            claimName: postgres-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  labels:
+    app: postgres
+spec:
+  ports:
+    - port: 5432
+      targetPort: 5432
+  selector:
+    app: postgres
+    task: postgres
+---

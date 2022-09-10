@@ -53,9 +53,9 @@ metadata:
     kubernetes.io/ingress.class: "public"
 spec:
   tls:
-  - hosts:
-    -  whoami.kdev.antosubash.com
-    secretName: whoami-tls
+    - hosts:
+      -  whoami.kdev.antosubash.com
+      secretName: whoami-tls
   rules:
   - host: "whoami.kdev.antosubash.com"
     http:
