@@ -1,3 +1,11 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: rabbitmq-data
+  namespace: rabbitmq
+spec:
+  accessModes: [ReadWriteOnce]
+  resources: { requests: { storage: 1Gi } }
 ---
 apiVersion: apps/v1
 kind: StatefulSet
@@ -47,13 +55,4 @@ spec:
       targetPort: 15672
   selector:
     app: rabbitmq
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: rabbitmq-data
-  namespace: rabbitmq
-spec:
-  accessModes: [ReadWriteOnce]
-  resources: { requests: { storage: 1Gi } }
 ---
